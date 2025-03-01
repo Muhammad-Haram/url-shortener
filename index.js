@@ -3,6 +3,7 @@ const path = require("path");
 require("dotenv").config();
 const connectToDb = require("./connect");
 const urlRoutes = require("./routes/url.routes");
+const staticRoutes = require("./routes/static.routes");
 const URL = require("./models/url.model");
 const app = express();
 const PORT = process.env.PORT;
@@ -13,17 +14,17 @@ app.set("view engine", "ejs");
 app.set("views", path.resolve("./views"));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
 app.use("/url", urlRoutes);
+app.use("/", staticRoutes);
 
-app.get("/", async (req, res) => {
-
-})
-
-app.get("/:shortId", async (req, res) => {
+app.get("/url/:shortId", async (req, res) => {
   const shortId = req.params.shortId;
-
   const entry = await URL.findOneAndUpdate(
-    { shortId },
+    {
+      shortId,
+    },
     {
       $push: {
         visitHistory: {
@@ -32,7 +33,6 @@ app.get("/:shortId", async (req, res) => {
       },
     }
   );
-
   res.redirect(entry.redirectURL);
 });
 
